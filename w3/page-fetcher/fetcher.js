@@ -2,39 +2,20 @@
 // as well as a local file path and download the resource to the specified path.
 
 const request = require('request');
-const fs = require('fs');
-if (process.argv.length === 4) {
-  const requestedResource = process.argv[2];
-  const localFilePath = process.argv[3];
-  
-  request(requestedResource, (err, status, body) => {
-    if (!err) {
-      if (body && status.statusCode === 200) {
-        fs.writeFile(localFilePath, body, (err) => {
-          if (!err) {
-            fs.stat(localFilePath, (err, stats) => {
-              if (!err) {
-                console.log(`Fetched & saved ${stats.size} bytes to ${localFilePath} successfully.`);
-              } else {
-                console.log('Unable to obtain the file size.');
-              }
-            });
-          } else {
-            console.log("Unable to save to the the specified path.", err);
-          }
-        });
-      } else {
-        console.log("Body of the requested URL is empty or the statusCode received was not 200");
-        console.log(`Status Code: ${status.statusCode} \r\n Status: \r\n ${status} \r\n Body: \r\n ${body}`);
-      }
+const fs = require("fs");
+
+const path = process.argv[3];
+const domain = process.argv[2];
+
+request(domain, (error, response, body) => {
+  if (error) {
+    console.log('error:', error);
+  }
+  fs.writeFile(`${path}`, body, function(error) {
+    if (error) {
+      console.log("error:", error);
     } else {
-      console.log("Unable to fetch the specified webpage.", err);
+      console.log(`Downloaded and saved ${response.headers["content-length"]} bytes to ${path}`);
     }
   });
-} else {
-  console.log("As expected");
-  console.log("node fetcher '[URL]' '[LOCAL FILE PATH]'");
-
-  console.log("Try the following command");
-  console.log("node fetcher http://example.com/ ./index.html");
-}
+});
